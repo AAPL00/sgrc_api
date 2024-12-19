@@ -15,16 +15,19 @@ async def save_user(user: User):
     else:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
     
-@users_router.get("/{name}", response_model=User, status_code=status.HTTP_202_ACCEPTED)
-async def get_user(name: str):
+@users_router.get("/{name}", response_model=tuple, status_code=status.HTTP_200_OK)
+async def get_user_data(name: str):
+    return (get_user(name), get_user_reservations(name))
+
+def get_user(name: str):
     user = search_user_by_name(name)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return User(**user)
 
-@users_router.get("/{name}/reservations", response_model=list, status_code=status.HTTP_200_OK)
-async def get_user_reservations(name: str):
+def get_user_reservations(name: str):
     reservations = search_reservations_by_user(name)
     if not reservations:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservations not found")
+        reservations = "There are no reservations under this user"
     return reservations
+
