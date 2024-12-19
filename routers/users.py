@@ -15,4 +15,10 @@ async def save_user(user: User):
     else:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
     
+@users_router.get("/{name}", response_model=User, status_code=status.HTTP_202_ACCEPTED)
+async def get_user(name: str):
+    user = search_user_by_name(name)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return User(**user)
 
