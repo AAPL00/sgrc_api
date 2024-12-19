@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from db.models.users import User
+from db.models.users import User, User_Response
 from db.client import client_db
 from db.services.user import search_user_by_name
 from db.services.reservation import search_reservations_by_user
@@ -14,7 +14,11 @@ async def save_user(user: User):
         return User(**search_user_by_name(user.name))
     else:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
-    
+
+@users_router.get("/{name}")
+async def get_other_user(name: str):
+    return get_user(name)
+
 @users_router.get("/{name}", response_model=tuple, status_code=status.HTTP_200_OK)
 async def get_user_data(name: str):
     return (get_user(name), get_user_reservations(name))
@@ -23,7 +27,7 @@ def get_user(name: str):
     user = search_user_by_name(name)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return User(**user)
+    return User_Response(**user)
 
 def get_user_reservations(name: str):
     reservations = search_reservations_by_user(name)
