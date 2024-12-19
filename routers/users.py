@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from db.models.users import User
 from db.client import client_db
-from db.schemas.user import user_schema
 from db.services.user import search_user_by_name
+from db.services.reservation import search_reservations_by_user
 
 users_router = APIRouter(prefix="/users")
 
@@ -22,5 +22,9 @@ async def get_user(name: str):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return User(**user)
 
-
-
+@users_router.get("/{name}/reservations", response_model=list, status_code=status.HTTP_200_OK)
+async def get_user_reservations(name: str):
+    reservations = search_reservations_by_user(name)
+    if not reservations:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reservations not found")
+    return reservations
