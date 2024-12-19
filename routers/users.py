@@ -19,6 +19,8 @@ async def save_user(user: User):
 async def get_user(name: str):
     user = search_user_by_name(name)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return User(**user)
+
+
 
