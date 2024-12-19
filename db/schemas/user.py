@@ -3,4 +3,4 @@ def user_schema(user) -> dict:
             "password": user["password"],
             "email": user["email"],
             "phone_number": user["phone_number"],
-            "type": user[type]}
+            "type": user["type"]}
