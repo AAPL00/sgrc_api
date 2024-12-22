@@ -1,14 +1,20 @@
 from db.client import client_db
 from db.models.users import User, User_Response
 from passlib.context import CryptContext
+from datetime import datetime, timedelta
+
+import jwt
+
+TOKEN_DURATION = 15
+SECRET = "SALEM"
+ALGORITHM = "HS256"
 
 cript = CryptContext(schemes=["bcrypt"])
 
-def insert_user(user: User):
-    user.password = cript.hash(user.password)
-    user_dict = dict(user)
-    return client_db.users.insert_one(user_dict)
+def auth_user(name: str, password: str):
+    user = client_db.users.find_one({"name": name}, {"name": 1, "password": 1})
+    return user["name"] if user and cript.verify(password, user["password"]) else None
 
-def search_user_by_name(name: str):
-    user_dict = client_db.users.find_one({"name": name}, {"password": 0})
-    return User_Response(**user_dict) if user_dict else None
+def create_acces_token(name: str):
+    access_token = {"sub": name, "exp": datetime.utcnow() + timedelta(minutes=TOKEN_DURATION)}
+    return {"access_token": jwt.encode(access_token, SECRET, algorithm=ALGORITHM), "type": "bearer"}
