@@ -1,15 +1,13 @@
-from fastapi import APIRouter, HTTPException, status
-from db.models.users import User_Response, User
-from db.services.auth_system import search_user_by_name, insert_user
+from fastapi import APIRouter, HTTPException, status, Depends
+from db.services.auth_system import auth_user, create_acces_token
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
 auth_router = APIRouter()
-
-@auth_router.post("/new", response_model=User_Response, status_code=status.HTTP_201_CREATED)
-async def create_new_user(user: User):
-    if not search_user_by_name(user.name):
-        insert_user(user)
-        return search_user_by_name(user.name)
-    else:
-        raise HTTPException(status.HTTP_409_CONFLICT, detail="There is already a user with this name")
+oauth2 = OAuth2PasswordBearer(tokenUrl="login")
     
-#@auth_router.post("/login", response_model=)
+@auth_router.post("/login", status_code=status.HTTP_202_ACCEPTED)
+async def login_user(form: OAuth2PasswordRequestForm = Depends()):
+    name = auth_user(form.username, form.password)
+    if not name:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Authentication failed")
+    return create_acces_token(name)
